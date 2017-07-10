@@ -1,0 +1,125 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+			     http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>org.renci</groupId>
+    <artifactId>parent</artifactId>
+    <version>0.0.15</version>    
+  </parent>
+  <name>dbSNP DOCSUM schema</name>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.renci.dbsnp</groupId>
+  <artifactId>dbsnp-schema</artifactId>
+  <version>3.4</version>
+  <packaging>bundle</packaging>
+  <properties>
+    <maven.site.plugin.skip>false</maven.site.plugin.skip>
+  </properties>
+  <issueManagement>
+    <system>GitHub Issues</system>
+    <url>https://github.com/jdr0887/dbsnp_schema/issues</url>
+  </issueManagement>
+  <licenses>    
+    <license>
+      <name>RENCI Open Source Software License</name>
+      <url>LICENSE</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <scm>
+    <url>https://github.com/jdr0887/dbsnp_schema</url>
+    <developerConnection>scm:git:git@github.com:jdr0887/dbsnp_schema.git</developerConnection>
+    <connection>scm:git:git@github.com:jdr0887/dbsnp_schema.git</connection>
+    <tag>HEAD</tag>
+  </scm>  
+  <build>
+    <plugins>
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-compiler-plugin</artifactId>
+	<configuration>
+	  <source>1.8</source>
+	  <target>1.8</target>
+	</configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.8</version>
+	<executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <configuration>
+              <target>
+		<delete dir="${project.basedir}/src/main/java/org/renci/dbsnp" />
+		<delete>
+		  <fileset dir="${project.basedir}/src/main/xsd" includes="*.xsd"/>
+		</delete>
+		<mkdir dir="${basedir}/src/main/java/org/renci/dbsnp"/>
+		<ftp action="get" server="ftp.ncbi.nlm.nih.gov" passive="yes" remotedir="/snp/specs" userid="anonymous" password="anonymous">
+		  <fileset dir="${project.basedir}/src/main/xsd">
+                    <include name="docsum_${project.version}.xsd"/>
+		  </fileset>
+		</ftp>
+	      </target>
+	    </configuration>
+	    <goals>
+              <goal>run</goal>
+            </goals>
+	  </execution>
+	</executions>
+        <dependencies>
+          <dependency>
+            <groupId>commons-net</groupId>
+            <artifactId>commons-net</artifactId>
+            <version>1.4.1</version>
+          </dependency>
+          <dependency>
+            <groupId>org.apache.ant</groupId>
+            <artifactId>ant-commons-net</artifactId>
+            <version>1.8.1</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>jaxb2-maven-plugin</artifactId>
+        <version>2.3</version>
+        <executions>
+          <execution>
+            <id>xjc</id>
+            <goals>
+              <goal>xjc</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <packageName>org.renci.dbsnp</packageName>
+        </configuration>
+      </plugin>
+      <plugin>
+	<groupId>org.apache.felix</groupId>
+	<artifactId>maven-bundle-plugin</artifactId>
+	<version>${maven.bundle.plugin.version}</version>
+	<extensions>true</extensions>
+	<inherited>true</inherited>
+	<configuration>
+	  <instructions>
+	    <Bundle-Name>${project.name}</Bundle-Name>
+	    <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+	    <Implementation-Title>${project.name}</Implementation-Title>
+	    <Implementation-Version>${project.version}</Implementation-Version>
+	    <Bundle-Vendor>UNC</Bundle-Vendor>
+	    <Include-Resource>{maven-resources}</Include-Resource>
+	    <_versionpolicy>[$(version;==;$(@)),$(version;+;$(@)))</_versionpolicy>
+	    <_removeheaders>Ignore-Package,Include-Resource,Private-Package,Bundle-DocURL</_removeheaders>
+	    <_failok>false</_failok>
+	    <Private-Package />
+            <Export-Package>org.renci.dbsnp.*</Export-Package>
+            <Import-Package>*</Import-Package>	    
+	  </instructions>
+	</configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
